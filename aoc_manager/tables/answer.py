@@ -1,0 +1,22 @@
+from deltalake import Field, Schema
+from polta.table import PoltaTable
+from polta.enums import TableQuality
+
+from tools.metastore import metastore
+
+
+table: PoltaTable = PoltaTable(
+  domain='aoc',
+  quality=TableQuality.CANONICAL,
+  name='answer',
+  raw_schema=Schema([
+    Field('year', 'integer'),
+    Field('day', 'integer'),
+    Field('part', 'string'),
+    Field('test_ind', 'boolean'),
+    Field('solution_id', 'string'),
+    Field('answer', 'string')
+  ]),
+  primary_keys=['year', 'day', 'part', 'test_ind'],
+  metastore=metastore
+)

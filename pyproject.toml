@@ -1,0 +1,23 @@
+[project]
+name = "aoc-manager"
+version = "0.1.0"
+description = "Advent-of-Code solution manager"
+authors = [
+    {name = "Joshua Gilliland (JoshTG)"}
+]
+license = {text = "MIT License"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "deltalake (>=0.25.0,<1.0.0)",
+  "polars (>=1.30.0,<1.31.0)",
+  "polta (>=0.3.5,<1.0.0)",
+  "pyperclip (>=1.9.0,<1.10.0)",
+  "PyYAML (>=6.0.2,<6.1.0)",
+  "shiny (>=1.4.0,<1.5.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
