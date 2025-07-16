@@ -1,11 +1,10 @@
 from deltalake import Field, Schema
-from polta.table import PoltaTable
-from polta.enums import TableQuality
+from polta.table import Table, TableQuality
 
 from tools.metastore import metastore
 
 
-table: PoltaTable = PoltaTable(
+table: Table = Table(
   domain='aoc',
   quality=TableQuality.CANONICAL,
   name='answer',

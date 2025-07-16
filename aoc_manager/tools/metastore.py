@@ -1,4 +1,4 @@
-from polta.metastore import PoltaMetastore
+from polta.metastore import Metastore
 
 
-metastore: PoltaMetastore = PoltaMetastore()
+metastore: Metastore = Metastore()
