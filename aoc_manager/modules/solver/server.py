@@ -13,9 +13,12 @@ from shiny import (
 )
 from shiny.reactive import Value
 from shiny.ui import Tag
+from typing import Optional
 
-from aoc_manager.tables.answer import table as pt_can_answer
-from aoc_manager.tables.solution import table as pt_can_solution
+from aoc_manager.tables.answer import \
+  table as tab_can_answer
+from aoc_manager.tables.solution import \
+  table as tab_can_solution
 from aoc_manager.tools.import_solver import import_solver
 from aoc_manager.tools.problem_solver import ProblemSolver
 
@@ -35,7 +38,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     """Generic reactive effects for site use"""
     year: int = input.num_year()
     day: int = input.num_day()
-    solver: ProblemSolver | None = import_solver(year, day)
+    solver: Optional[ProblemSolver] = import_solver(year, day)
     ui.update_action_button('btn_run', disabled=solver is None)
     
   @render.text
@@ -69,7 +72,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     if selection in ['a', 'both']:
       solver.run_a()
       a_output.set('X'*len(str(solver.answer_a)) if solver.mask_answers else solver.answer_a)
-      pt_can_solution.append({
+      tab_can_solution.append({
         '_execution_ts': datetime.now(),
         'id': solver.run_id_a,
         'year': year,
@@ -82,7 +85,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     if selection in ['b', 'both']:
       solver.run_b()
       b_output.set('X'*len(str(solver.answer_b)) if solver.mask_answers else solver.answer_b)
-      pt_can_solution.append({
+      tab_can_solution.append({
         '_execution_ts': datetime.now(),
         'id': solver.run_id_b,
         'year': year,
@@ -136,9 +139,9 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
         'solution_id': data['run_id_a'],
         'answer': str(data['answer_a'])
       }],
-      schema=pt_can_answer.schema_polars
+      schema=tab_can_answer.schema.polars
     )
-    pt_can_answer.save_to_delta(df)
+    tab_can_answer.upsert(df)
     ui.notification_show(
       f'Answer A saved!',
       type='message',
@@ -187,9 +190,9 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
         'solution_id': data['run_id_b'],
         'answer': str(data['answer_b'])
       }],
-      schema=pt_can_answer.schema_polars
+      schema=tab_can_answer.schema.polars
     )
-    pt_can_answer.upsert(df)
+    tab_can_answer.upsert(df)
     ui.notification_show(
       f'Answer B saved!',
       type='message',

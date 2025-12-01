@@ -37,7 +37,7 @@ app_ui: Tag = ui.page_fluid(
 
 
 # Define main server which contains modules of each navbar panel
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input: Inputs, output: Outputs, session: Session) -> None:
   solver_server('solver')
   inputs_server('inputs')
   solutions_server('solutions')

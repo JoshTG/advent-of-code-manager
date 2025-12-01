@@ -175,4 +175,4 @@ cython_debug/
 
 # Project-specific files
 metastore/
-solutions/
+solutions/Y*/

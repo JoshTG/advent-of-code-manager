@@ -1,9 +1,10 @@
 from importlib import import_module
+from typing import Optional
 
 from aoc_manager.tools.problem_solver import ProblemSolver
 
 
-def import_solver(year: int, day: int) -> ProblemSolver | None:
+def import_solver(year: int, day: int) -> Optional[ProblemSolver]:
   """Retrieves a ProblemSolver based on a year and day, if it exists
 
   Args:
@@ -11,7 +12,7 @@ def import_solver(year: int, day: int) -> ProblemSolver | None:
     day (int): the day of the solver
 
   Returns:
-    solver (ProblemSolver | None): if it exists, the applicable ProblemSolver
+    solver (Optional[ProblemSolver]): if applicable, the applicable ProblemSolver
   """
   try:
     return getattr(

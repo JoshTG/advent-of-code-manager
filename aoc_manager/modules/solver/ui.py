@@ -10,9 +10,9 @@ def solver_ui() -> Tag:
       ui.input_numeric(
         id='num_year',
         label='Year',
-        value=2024,
+        value=datetime.now().year,
         min=2020,
-        max=2024,
+        max=datetime.now().year,
         step=1
       ),
       ui.input_numeric(
