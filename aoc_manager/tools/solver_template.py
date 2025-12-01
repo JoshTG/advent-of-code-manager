@@ -4,7 +4,7 @@ from aoc_manager.tools.problem_solver import ProblemSolver
 
 class D{day}Solver(ProblemSolver):
   def __init__(self, year: str, test: bool = False, debug: bool = False, input_format: type = str,
-               mask_answers: bool = False):
+               mask_answers: bool = False) -> None:
     super().__init__(
       year=year,
       day='{day}',
@@ -17,12 +17,12 @@ class D{day}Solver(ProblemSolver):
     self.answer_a: int = 0
     self.answer_b: int = 0
 
-  def _preprocess(self):
+  def _preprocess(self) -> None:
     pass
 
-  def _solve_a(self):
+  def _solve_a(self) -> None:
     pass
 
-  def _solve_b(self):
+  def _solve_b(self) -> None:
     pass
 '''

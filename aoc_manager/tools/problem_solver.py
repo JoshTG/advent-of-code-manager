@@ -180,7 +180,7 @@ class ProblemSolver:
     inputs: list[str] = []
 
     for input_path in [input_a_path, input_b_path]:
-      if self.input_format == str:
+      if self.input_format is str:
         inputs.append(open(input_path, 'r').read())
         continue
 

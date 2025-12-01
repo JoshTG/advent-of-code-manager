@@ -8,25 +8,24 @@ This manager provides the following features:
 
 1. Store and manage your input data in one place.
 2. Automate the creation and execution of solver scripts for specific days.
-3. Handle all aspects of `Advent of Code` in a user-friendly UI.
+3. Save and track solutions year-over-year.
+4. Handle all aspects of `Advent of Code` in a user-friendly UI.
 
 # Installation
 
-1. Ensure your `python` version is at least `v3.13`.
+1. Ensure your `python` version is at least `3.13`.
 2. Install [poetry](https://python-poetry.org/).
-3. Clone this repository to your local machine.
-4. Enter the `advent-of-code-manager` directory via command prompt.
-5. Build a virtual environment: `py -m venv .venv`.
-6. Connect `poetry` to the virtual environment: `poetry env use .venv/path/to/python`.
-7. Download all dependencies: `poetry install`.
+3. Fork this repository and/or clone it to your local machine.
+4. Navigate to the code in a command prompt.
+5. Download all dependencies by running `poetry install`.
 
 # Usage
 
 After the initial setup as outlined in `Installation`, follow these steps:
   
-1. Enter the `advent-of-code-manager` directory via command prompt.
-2. 
-
+1. Navigate to the code in a command prompt.
+2. Run `poetry run app` to execute the main app entrypoint.
+3. Enter `http://127.0.0.1:8000` in your favorite web browser.
 
 # Acknowledgements
 

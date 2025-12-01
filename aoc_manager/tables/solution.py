@@ -1,12 +1,12 @@
 from deltalake import Field, Schema
 from polta.table import Table, TableQuality
 
-from tools.metastore import metastore
+from aoc_manager.tools.metastore import metastore
 
 
 table: Table = Table(
   domain='aoc',
-  quality=TableQuality.CANONICAL,
+  quality=TableQuality.STANDARD,
   name='solution',
   raw_schema=Schema([
     Field('_execution_ts', 'timestamp'),

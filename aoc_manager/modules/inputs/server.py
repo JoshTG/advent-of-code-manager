@@ -84,18 +84,18 @@ def inputs_server(input: Inputs, output: Outputs, session: Session) -> None:
     if part_a:
       open(part_a_test_path, 'w').write(part_a)
       ui.notification_show(
-        f'Part A was updated successfully!',
+        'Part A was updated successfully!',
         duration=2
       )
     if part_b:
       open(part_b_test_path, 'w').write(part_b)
       ui.notification_show(
-        f'Part B was updated successfully!',
+        'Part B was updated successfully!',
         duration=2
       )
     if day_part:
       open(day_path, 'w').write(day_part)
       ui.notification_show(
-        f'Day input was updated successfully!',
+        'Day input was updated successfully!',
         duration=2
       )

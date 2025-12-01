@@ -25,10 +25,6 @@ from aoc_manager.tools.problem_solver import ProblemSolver
 
 # Define reactive values for the solver page
 solution_data: Value = Value({})
-a_debug: Value = Value('')
-b_debug: Value = Value('')
-a_output: Value = Value('')
-b_output: Value = Value('')
 
 
 @module.server
@@ -71,7 +67,6 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
 
     if selection in ['a', 'both']:
       solver.run_a()
-      a_output.set('X'*len(str(solver.answer_a)) if solver.mask_answers else solver.answer_a)
       tab_can_solution.append({
         '_execution_ts': datetime.now(),
         'id': solver.run_id_a,
@@ -84,7 +79,6 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
       })
     if selection in ['b', 'both']:
       solver.run_b()
-      b_output.set('X'*len(str(solver.answer_b)) if solver.mask_answers else solver.answer_b)
       tab_can_solution.append({
         '_execution_ts': datetime.now(),
         'id': solver.run_id_b,
@@ -112,7 +106,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
 
     copy_to_clipboard(data.get('answer_a'))
     ui.notification_show(
-      f'Part A answer was copied to clipboard!',
+      'Part A answer was copied to clipboard!',
       type='message',
       duration=2
     )
@@ -124,7 +118,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
 
     if not data.get('year'):
       ui.notification_show(
-        f'Error: No answer found. Please click \'Run\' to generate an answer.',
+        'Error: No answer found. Please click \'Run\' to generate an answer.',
         type='error',
         duration=3
       )
@@ -143,7 +137,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     )
     tab_can_answer.upsert(df)
     ui.notification_show(
-      f'Answer A saved!',
+      'Answer A saved!',
       type='message',
       duration=2
     )
@@ -163,7 +157,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
 
     copy_to_clipboard(data.get('answer_b'))
     ui.notification_show(
-      f'Part B answer was copied to clipboard!',
+      'Part B answer was copied to clipboard!',
       type='message',
       duration=2
     )
@@ -175,7 +169,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
 
     if not data.get('year'):
       ui.notification_show(
-        f'Error: No answer found. Please click \'Run\' to generate an answer.',
+        'Error: No answer found. Please click \'Run\' to generate an answer.',
         type='error',
         duration=3
       )
@@ -194,7 +188,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     )
     tab_can_answer.upsert(df)
     ui.notification_show(
-      f'Answer B saved!',
+      'Answer B saved!',
       type='message',
       duration=2
     )
@@ -218,7 +212,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     a_output: str = data.get('answer_a', '')
     mask_answer: bool = data.get('mask_answers', False)
     if a_output:
-      return ui.h2(f'Answer: {"X"*len(str(a_output)) if mask_answer else a_output}')
+      return ui.h2(f'Answer: {"XXXXX" if mask_answer else a_output}')
     return ui.h2('')
 
   @render.ui
@@ -251,7 +245,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     b_output: str = data.get('answer_b', '')
     mask_answer: bool = data.get('mask_answers', False)
     if b_output:
-      return ui.h2(f'Answer: {"X"*len(str(b_output)) if mask_answer else b_output}')
+      return ui.h2(f'Answer: {"XXXXX" if mask_answer else b_output}')
     return ui.h2('')
 
   @render.ui

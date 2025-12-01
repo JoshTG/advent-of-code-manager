@@ -31,7 +31,9 @@ app_ui: Tag = ui.page_fluid(
     ui.nav_panel('Solutions',
       solutions_ui('solutions')
     ),
-    title='Advent of Code'
+    ui.nav_spacer(),
+    ui.nav_control(ui.input_dark_mode()),
+    title='Advent of Code Manager🎄'
   )
 )
 

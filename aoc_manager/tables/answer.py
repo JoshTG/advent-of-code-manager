@@ -1,12 +1,12 @@
 from deltalake import Field, Schema
 from polta.table import Table, TableQuality
 
-from tools.metastore import metastore
+from aoc_manager.tools.metastore import metastore
 
 
 table: Table = Table(
   domain='aoc',
-  quality=TableQuality.CANONICAL,
+  quality=TableQuality.STANDARD,
   name='answer',
   raw_schema=Schema([
     Field('year', 'integer'),

@@ -3,6 +3,11 @@ from shiny import module, ui
 from shiny.ui import Tag
 
 
+# Variables pertaining to user time
+this_year: int = datetime.now().year
+today: int = datetime.now().day
+max_day: int = 31 if this_year < 2025 else 12
+
 @module.ui
 def inputs_ui() -> Tag:
   return ui.layout_sidebar(
@@ -10,17 +15,17 @@ def inputs_ui() -> Tag:
       ui.input_numeric(
         id='num_input_year',
         label='Year',
-        value=datetime.now().year,
+        value=this_year,
         min=2020,
-        max=2024,
+        max=this_year,
         step=1
       ),
       ui.input_numeric(
         id='num_input_day',
         label='Day',
-        value=datetime.now().day,
+        value=today,
         min=1,
-        max=31,
+        max=max_day,
         step=1
       ),
       ui.input_action_button(
