@@ -1,2 +1,40 @@
-# advent-of-code-manager
-An advent-of-code solution manager
+# Advent of Code Manager
+
+_A pure Python Advent of Code manager_
+
+# At a Glance
+
+This manager provides the following features:
+
+1. Store and manage your input data in one place.
+2. Automate the creation and execution of solver scripts for specific days.
+3. Save and track solutions year-over-year.
+4. Handle all aspects of `Advent of Code` in a user-friendly UI.
+
+# Installation
+
+1. Ensure your `python` version is at least `3.13`.
+2. Install [poetry](https://python-poetry.org/).
+3. Fork this repository and/or clone it to your local machine.
+4. Navigate to the code in a command prompt.
+5. Download all dependencies by running `poetry install`.
+
+# Usage
+
+After the initial setup as outlined in `Installation`, follow these steps:
+  
+1. Navigate to the code in a command prompt.
+2. Run `poetry run app` to execute the main app entrypoint.
+3. Enter `http://127.0.0.1:8000` in your favorite web browser.
+
+# Acknowledgements
+
+Below are the top-level packages with their licenses.
+
+| Package | Version | Purpose | License |
+| ------- | ------- | ------- | ------- |
+| [deltalake](https://github.com/delta-io/delta-rs) | >=0.25.5, <1.0.0 | Stores and reads data | Apache Software License (Apache-2.0) |
+| [polars](https://github.com/pola-rs/polars) | >=1.30.0, <1.31.0 | Executes DataFrame transformation | MIT License |
+| [polta](https://github.com/JoshTG/polta) | >=0.7. 0<1.0.0 | Handles the data storage and transformation | MIT License |
+| [pyperclip](https://github.com/asweigart/pyperclip) | >=1.9.0, <1.10.0 | Copies solutions to the user's clipboards | BSD-3-Clause license |
+| [shiny](https://github.com/posit-dev/py-shiny) | >=1.4.0,<1.5.0 | Builds the core webapp | MIT License |
