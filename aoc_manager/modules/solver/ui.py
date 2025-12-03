@@ -47,7 +47,7 @@ def solver_ui() -> Tag:
       ui.input_action_button(
         id='btn_run',
         label='Run',
-        class_='btn btn-primary'
+        class_='btn btn-success'
       )
     ),
     ui.layout_column_wrap(
@@ -58,6 +58,7 @@ def solver_ui() -> Tag:
         ui.card(
           ui.card_header('Part A'),
           ui.output_ui('txt_a_output'),
+          ui.output_ui('txt_a_validation'),
           ui.output_ui('txt_a_processing_time'),
           ui.input_action_button(
             id='btn_copy_a',
@@ -66,11 +67,13 @@ def solver_ui() -> Tag:
           ui.input_action_button(
             id='btn_save_a',
             label='Save Answer'
-          )
+          ),
+          ui.output_code('txt_error_message_a')
         ),
         ui.card(
           ui.card_header('Part B'),
           ui.output_ui('txt_b_output'),
+          ui.output_ui('txt_b_validation'),
           ui.output_ui('txt_b_processing_time'),
           ui.input_action_button(
             id='btn_copy_b',
@@ -79,11 +82,29 @@ def solver_ui() -> Tag:
           ui.input_action_button(
             id='btn_save_b',
             label='Save Answer'
-          )
+          ),
+          ui.output_code('txt_error_message_b')
         ),
         ui.card(
           ui.card_header('Debug Logs'),
+          ui.input_numeric(
+            id='num_max_logs',
+            label='Limit',
+            width='20%',
+            value=100,
+            min=1,
+            max=1_000_000,
+            step=1
+          ),
           ui.output_data_frame('tbl_debug'),
+          ui.card_footer(
+            ui.input_action_button(
+              id='btn_fetch_debug_logs',
+              label='Fetch',
+              width='45%',
+              class_='btn btn-primary'
+            )
+          )
         )
       )
     )

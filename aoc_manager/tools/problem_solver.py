@@ -1,10 +1,13 @@
 from dataclasses import field, dataclass
-from os import getcwd, path
+from polars import coalesce
 from time import time
 from typing import Any
 from uuid import uuid4
 
-from aoc_manager.tools.log import Log
+from aoc_manager.tables.input import \
+  table as tab_aoc_input
+from aoc_manager.tables.log import \
+  table as tab_aoc_log
 
 
 @dataclass
@@ -18,19 +21,16 @@ class ProblemSolver:
   mask_answers: bool = field(default_factory=lambda: False)
   processing_rounding_digits: int = field(default_factory=lambda: 8)
 
-  input_path_prefix: str = field(init=False)
-  output_path_prefix: str = field(init=False)
   log_level_map: dict[str, str] = field(init=False)
-  
-  filename: str = field(init=False)
-  filename_a_test: str = field(init=False)
-  filename_b_test: str = field(init=False)
   
   input_a_text: str = field(init=False)
   input_b_text: str = field(init=False)
   
   answer_a: Any = field(init=False)
   answer_b: Any = field(init=False)
+
+  expected_a: str = field(init=False)
+  expected_b: str = field(init=False)
   
   preprocessing_time: float = field(init=False)
   a_processing_time: float = field(init=False)
@@ -40,41 +40,16 @@ class ProblemSolver:
   run_id_a: str = field(init=False)
   run_id_b: str = field(init=False)
   
-  logs: list[Log] = field(init=False)
   context: str = field(init=False)
 
   def __post_init__(self) -> None:
-    self.input_path_prefix: str = path.join(
-      getcwd(),
-      'solutions',
-      f'Y{self.year}',
-      'inputs'
-    )
-    self.output_path_prefix: str = path.join(
-      getcwd(),
-      'solutions',
-      f'Y{self.year}',
-      'outputs'
-    )
     self.log_level_map: dict[str, str] = {
       'p': 'Pre-Processor',
       'a': 'Part A',
       'b': 'Part B'
     }
-
-    self.filename: str = path.join(
-      self.input_path_prefix,
-      f'{self.day}.txt'
-    )
-    self.filename_a_test: str = path.join(
-      self.input_path_prefix,
-      f'{self.day}-a-test.txt'
-    )
-    self.filename_b_test: str = path.join(
-      self.output_path_prefix,
-      f'{self.day}-b-test.txt'
-    )
-    self.input_a_text, self.input_b_text = self._retrieve_inputs()
+    self.input_a_text, self.input_b_text, \
+      self.expected_a, self.expected_b = self._retrieve_inputs()
 
     self.answer_a: Any = None
     self.answer_b: Any = None
@@ -87,8 +62,8 @@ class ProblemSolver:
     self.run_id_a: str = ''
     self.run_id_b: str = ''
 
-    self.logs: list[Log] = []
     self.context: str = ''
+    self.logs: list[dict] = []
 
   def preprocess_inputs(self) -> None:
     """Log and execute the _preprocess() method"""
@@ -96,6 +71,7 @@ class ProblemSolver:
     self.context: str = 'p'
     self._preprocess()
     self.preprocessing_time: float = max(time() - preprocessing_start_time, 0.00)
+    self.save_logs()
     
   def run_a(self) -> None:
     """Log and execute the _solve_a() method"""
@@ -105,6 +81,7 @@ class ProblemSolver:
     self._solve_a()
     self.a_processing_time: float = max(time() - a_start_time, 0.00)
     self.total_processing_time: float = self.get_total_processing_time()
+    self.save_logs()
 
   def run_b(self) -> None:
     """Log and execute the _solve_b() method"""
@@ -114,24 +91,29 @@ class ProblemSolver:
     self._solve_b()
     self.b_processing_time: float = max(time() - b_start_time, 0.00)
     self.total_processing_time: float = self.get_total_processing_time()
+    self.save_logs()
 
-  def log(self, line: Any, label: str = '', also_print: bool = False) -> None:
-    """Store a log with context and optionally print it
+  def log(self, line: Any, label: str = '') -> None:
+    """Store a log with context
     
     Args:
       line (Any): the line to log
       label (str): Any helpful context with which to tag the line
-      also_print (optional) (bool): indicates whether to print in addition to logging
     """
-    log: Log = Log(
-      data=str(line),
-      label=label,
-      level=self.log_level_map.get(self.context, '')
-    )
-    self.logs.append(log)
-
-    if also_print:
-      log.print()
+    if not self.debug:
+      return
+    self.logs.append({
+      'year': int(self.year),
+      'day': int(self.day),
+      'context': self.log_level_map.get(self.context, ''),
+      'data': str(line),
+      'label': label
+    })
+  
+  def save_logs(self) -> None:
+    """Saves logs to Polta Table"""
+    tab_aoc_log.append(self.logs)
+    self.logs.clear()
 
   def get_total_processing_time(self) -> float:
     """Retrieves the total processing time of the execution steps
@@ -161,30 +143,32 @@ class ProblemSolver:
     """This should get overriden by a child class"""
     pass
 
-  def _retrieve_inputs(self) -> tuple[str, str]:
+  def _retrieve_inputs(self) -> tuple[str, str, str, str]:
     """Retrieves the proper inputs for the day and Any test data
     
     Returns:
-      inputs (tuple[str, str]): the inputs of A and B
+      inputs (tuple[str, str, str, str]): input A, expected A, input B, expected B
     """
-    if self.test:
-      input_a_path: str = path.join(self.input_path_prefix, self.filename_a_test)
-      input_b_path: str = path.join(self.input_path_prefix, self.filename_b_test)
-    else:
-      input_a_path: str = path.join(self.input_path_prefix, self.filename)
-      input_b_path: str = path.join(self.input_path_prefix, self.filename)
+    row: dict[str, Any] = (tab_aoc_input
+      .get(
+        filter_conditions={'year': int(self.year), 'day': int(self.day)}
+      ).with_columns(
+        coalesce('input_test_b', 'input_test_a').alias('input_test_b')
+      ).to_dicts()
+      [0]
+    )
 
-    if not path.exists(input_b_path):
-      input_b_path: str = input_a_path
+    cols: list[str] = ['input_test_a', 'input_test_b'] if self.test else \
+      ['full_input', 'full_input']
 
     inputs: list[str] = []
 
-    for input_path in [input_a_path, input_b_path]:
+    for col in cols:
       if self.input_format is str:
-        inputs.append(open(input_path, 'r').read())
+        inputs.append(row[col])
         continue
 
-      items: list[str] = list(map(lambda l: l.replace('\n', ''), open(input_path, 'r').readlines()))
+      items: list[str] = list(map(lambda l: l.replace('\n', ''), row[col].splitlines()))
 
       if self.input_format == list[str]:
         inputs.append(items)
@@ -197,4 +181,4 @@ class ProblemSolver:
       else:
         raise NotImplementedError
     
-    return inputs
+    return inputs[0], inputs[1], row['expected_a'], row['expected_b']

@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
 class Log:
   """Simple dataclass for storing one log line in context"""
-  data: any
+  data: Any
   label: str = ''
   level: str = ''
 

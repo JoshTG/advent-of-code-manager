@@ -48,6 +48,10 @@ def inputs_ui() -> Tag:
         width='50%',
         height='200px'
       ),
+      ui.input_text(
+        id='txt_test_a_solution',
+        label='Part A Expected Solution'
+      ),
       ui.input_text_area(
         id='txt_day_input',
         label='Day Input',
@@ -60,6 +64,10 @@ def inputs_ui() -> Tag:
         width='50%',
         height='200px',
         placeholder='Leave empty to default to Part A Test'
-      )
+      ),
+      ui.input_text(
+        id='txt_test_b_solution',
+        label='Part B Expected Solution'
+      ),
     )
   )
