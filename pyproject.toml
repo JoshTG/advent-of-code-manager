@@ -13,7 +13,8 @@ dependencies = [
   "polars (>=1.30.0,<1.31.0)",
   "polta (>=0.8.4,<1.0.0)",
   "pyperclip (>=1.9.0,<1.10.0)",
-  "shiny (>=1.5.0,<1.6.0)"
+  "shiny (>=1.5.0,<1.6.0)",
+  "typer (>=0.20.0,<0.21.0)"
 ]
 
 [build-system]
@@ -22,3 +23,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 app = "aoc_manager.main:main"
+cli = "aoc_manager.cli:app"
