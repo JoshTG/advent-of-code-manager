@@ -7,17 +7,15 @@ from aoc_manager.tools.metastore import metastore
 table: Table = Table(
   domain='aoc',
   quality=TableQuality.STANDARD,
-  name='solution',
+  name='guess',
   raw_schema=Schema([
-    Field('_execution_ts', 'timestamp'),
-    Field('id', 'string'),
     Field('year', 'integer'),
     Field('day', 'integer'),
     Field('part', 'string'),
-    Field('test_ind', 'boolean'),
-    Field('answer', 'string'),
-    Field('processing_time', 'float')
+    Field('solution_id', 'string'),
+    Field('guess', 'string'),
+    Field('comparison', 'string')
   ]),
-  metastore=metastore,
-  primary_keys=['year', 'day', 'part', 'test_ind']
+  primary_keys=['year', 'day', 'part', 'guess'],
+  metastore=metastore
 )

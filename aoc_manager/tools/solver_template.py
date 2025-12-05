@@ -1,5 +1,4 @@
-solver_template: str = '''
-from aoc_manager.tools.problem_solver import ProblemSolver
+solver_template: str = '''from aoc_manager.tools.problem_solver import ProblemSolver
 
 
 class D{day}Solver(ProblemSolver):
@@ -21,8 +20,8 @@ class D{day}Solver(ProblemSolver):
     pass
 
   def _solve_a(self) -> None:
-    pass
+    raise NotImplementedError('Solver A not implemented yet.')
 
   def _solve_b(self) -> None:
-    pass
+    raise NotImplementedError('Solver B not implemented yet.')
 '''

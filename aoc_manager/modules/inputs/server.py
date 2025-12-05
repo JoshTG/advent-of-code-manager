@@ -7,7 +7,10 @@ from shiny import (
   Session,
   ui
 )
+from typing import Any
 
+from aoc_manager.tables.input import \
+  table as tab_aoc_input
 from aoc_manager.tools.solver_template import solver_template
 
 
@@ -42,60 +45,60 @@ def inputs_server(input: Inputs, output: Outputs, session: Session) -> None:
   @reactive.effect
   @reactive.event(input.btn_load_inputs)
   def btn_load_inputs() -> None:
-    year: str = str(input.num_input_year())
-    day: str = str(input.num_input_day())
+    rows: list[dict] = tab_aoc_input.get(
+      filter_conditions={
+        'year': input.num_input_year(),
+        'day': input.num_input_day()
+      },
+    ).to_dicts()
 
-    directory: str = path.join(getcwd(), 'solutions', f'Y{year}', 'inputs')
-    part_a_test_path: str = path.join(directory, f'{day}-a-test.txt')
-    part_b_test_path: str = path.join(directory, f'{day}-b-test.txt')
-    day_path: str = path.join(directory, f'{day}.txt')
+    if not rows:
+      ui.notification_show(
+        'No inputs found for this day.',
+        duration=3,
+        type='warning'
+      )
+      return
+
+    row: dict[str, Any] = rows[0]
 
     ui.update_text_area(
       id='txt_test_a',
-      value=open(part_a_test_path, 'r').read() if path.exists(part_a_test_path) else ''
+      value=row['input_test_a']
+    )
+    ui.update_text_area(
+      id='txt_test_a_solution',
+      value=row['expected_a']
     )
     ui.update_text_area(
       id='txt_test_b',
-      value=open(part_b_test_path, 'r').read() if path.exists(part_b_test_path) else ''
+      value=row['input_test_b']
+    )
+    ui.update_text_area(
+      id='txt_test_b_solution',
+      value=row['expected_b']
     )
     ui.update_text_area(
       id='txt_day_input',
-      value=open(day_path, 'r').read() if path.exists(day_path) else ''
+      value=row['full_input']
     )
   
   @reactive.effect
   @reactive.event(input.btn_save_inputs)
   def btn_save_inputs() -> None:
-    year: str = str(input.num_input_year())
-    day: str = str(input.num_input_day())
+    payload: dict[str, Any] = {
+      'year': input.num_input_year(),
+      'day': input.num_input_day(),
+      'input_test_a': input.txt_test_a(),
+      'expected_a': input.txt_test_a_solution(),
+      'input_test_b': input.txt_test_b(),
+      'expected_b': input.txt_test_b_solution(),
+      'full_input': input.txt_day_input()
+    }
+    tab_aoc_input.upsert(payload)
 
-    directory: str = path.join(getcwd(), 'solutions', f'Y{year}', 'inputs')
-    part_a_test_path: str = path.join(directory, f'{day}-a-test.txt')
-    part_b_test_path: str = path.join(directory, f'{day}-b-test.txt')
-    day_path: str = path.join(directory, f'{day}.txt')
-
-    if not path.exists(directory):
-      makedirs(directory, exist_ok=True)
-
-    part_a: str = input.txt_test_a()
-    part_b: str = input.txt_test_b()
-    day_part: str = input.txt_day_input()
-
-    if part_a:
-      open(part_a_test_path, 'w').write(part_a)
-      ui.notification_show(
-        'Part A was updated successfully!',
-        duration=2
-      )
-    if part_b:
-      open(part_b_test_path, 'w').write(part_b)
-      ui.notification_show(
-        'Part B was updated successfully!',
-        duration=2
-      )
-    if day_part:
-      open(day_path, 'w').write(day_part)
-      ui.notification_show(
-        'Day input was updated successfully!',
-        duration=2
-      )
+    ui.notification_show(
+      'Input was saved successfully!',
+      duration=3,
+      type='message'
+    )
