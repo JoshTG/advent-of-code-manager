@@ -1,5 +1,6 @@
+import polars as pl
+
 from dataclasses import field, dataclass
-from polars import coalesce
 from time import time
 from typing import Any
 from uuid import uuid4
@@ -67,6 +68,9 @@ class ProblemSolver:
 
   def preprocess_inputs(self) -> None:
     """Log and execute the _preprocess() method"""
+    if len(self.input_a_text) == 0 and len(self.input_b_text) == 0:
+      raise RuntimeError('Error: no input text has been provided.')
+
     preprocessing_start_time: float = time()
     self.context: str = 'p'
     self._preprocess()
@@ -152,8 +156,11 @@ class ProblemSolver:
     row: dict[str, Any] = (tab_aoc_input
       .get(
         filter_conditions={'year': int(self.year), 'day': int(self.day)}
-      ).with_columns(
-        coalesce('input_test_b', 'input_test_a').alias('input_test_b')
+      ).with_columns(pl
+        .when(pl.col('input_test_b') != '')
+        .then(pl.col('input_test_b'))
+        .otherwise(pl.col('input_test_a'))
+        .alias('input_test_b')
       ).to_dicts()
       [0]
     )

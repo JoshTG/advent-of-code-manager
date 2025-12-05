@@ -16,8 +16,8 @@ from shiny.reactive import Value
 from shiny.ui import Tag
 from typing import Optional
 
-from aoc_manager.tables.answer import \
-  table as tab_can_answer
+from aoc_manager.tables.guess import \
+  table as tab_std_guess
 from aoc_manager.tables.log import \
   table as tab_std_log
 from aoc_manager.tables.solution import \
@@ -28,7 +28,10 @@ from aoc_manager.tools.problem_solver import ProblemSolver
 
 # Define reactive values for the solver page
 solution_data: Value = Value({})
-debug_logs: Value = Value([])
+debug_logs_pre: Value = Value([])
+debug_logs_a: Value = Value([])
+debug_logs_b: Value = Value([])
+error_message_pre: Value = Value('')
 error_message_a: Value = Value('')
 error_message_b: Value = Value('')
 
@@ -40,10 +43,22 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     """Generic reactive effects for site use"""
     year: int = input.num_year()
     day: int = input.num_day()
+    data: dict = solution_data.get()
+    solution_a_exists: bool = data.get('answer_a', None) is not None
+    solution_b_exists: bool = data.get('answer_a', None) is not None
+    is_test: bool = data.get('test', False)
     solver: Optional[ProblemSolver] = import_solver(year, day)
     ui.update_action_button('btn_run', disabled=solver is None)
-    ui.update_action_button('btn_fetch_debug_logs', disabled=solution_data.get() == {})
-    
+    ui.update_action_button('btn_fetch_debug_logs_pre', disabled=data == {})
+    ui.update_action_button('btn_fetch_debug_logs_a', disabled=not solution_a_exists)
+    ui.update_action_button('btn_fetch_debug_logs_b', disabled=not solution_b_exists)
+    ui.update_action_button('btn_a_too_low', disabled=not solution_a_exists or is_test)
+    ui.update_action_button('btn_a_correct', disabled=not solution_a_exists or is_test)
+    ui.update_action_button('btn_a_too_high', disabled=not solution_a_exists or is_test)
+    ui.update_action_button('btn_b_too_low', disabled=not solution_b_exists or is_test)
+    ui.update_action_button('btn_b_correct', disabled=not solution_b_exists or is_test)
+    ui.update_action_button('btn_b_too_high', disabled=not solution_b_exists or is_test)
+
   @render.text
   def txt_day_information() -> str:
     """Renders the header for the solution card
@@ -62,6 +77,8 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     mask_answers: bool = input.chk_mask_answers()
     test: bool = input.chk_test()
     selection: str = input.sel_day_part()
+    solution_data.set({})
+    error_message_pre.set('')
     error_message_a.set('')
     error_message_b.set('')
     tab_std_log.truncate()
@@ -74,9 +91,9 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
         test=test
       )
     except FileNotFoundError:
-      error_message_a.set(traceback.format_exc())
+      error_message_pre.set(traceback.format_exc())
       ui.notification_show(
-        'Error during solver import: Please read error message below for traceback.',
+        'Error during solver import: Please read error message for traceback.',
         duration=3,
         type='error'
       )
@@ -85,9 +102,9 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
     try:
       solver.preprocess_inputs()
     except Exception:
-      error_message_a.set(traceback.format_exc())
+      error_message_pre.set(traceback.format_exc())
       ui.notification_show(
-        'Error during pre-processing: Please read error message below for traceback.',
+        'Error during pre-processing: Please read error message for traceback.',
         duration=3,
         type='error'
       )
@@ -98,7 +115,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
         except Exception:
           error_message_a.set(traceback.format_exc())
           ui.notification_show(
-            'Error during A: Please read error message below for traceback.',
+            'Error during A: Please read error message for traceback.',
             duration=3,
             type='error'
           )
@@ -119,7 +136,7 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
         except Exception:
           error_message_b.set(traceback.format_exc())
           ui.notification_show(
-            'Error during B: Please read error message below for traceback.',
+            'Error during B: Please read error message for traceback.',
             duration=3,
             type='error'
           )
@@ -136,20 +153,50 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
           })
         solution_data.set(solver.__dict__)
 
-
   @reactive.effect
-  @reactive.event(input.btn_fetch_debug_logs)
-  def btn_fetch_debug_logs() -> None:
-    limit: int = input.num_max_logs()
+  @reactive.event(input.btn_fetch_debug_logs_pre)
+  def btn_fetch_debug_logs_pre() -> None:
+    limit: int = input.num_max_logs_pre()
     df: pl.DataFrame = tab_std_log.get(
       filter_conditions={
         'year': input.num_year(),
-        'day': input.num_day()
+        'day': input.num_day(),
+        'context': 'Pre-Processor'
       },
       select=['data', 'label', 'context'],
       limit=limit
     )
-    debug_logs.set(df.to_dicts())
+    debug_logs_pre.set(df.to_dicts())
+
+  @reactive.effect
+  @reactive.event(input.btn_fetch_debug_logs_a)
+  def btn_fetch_debug_logs_a() -> None:
+    limit: int = input.num_max_logs_a()
+    df: pl.DataFrame = tab_std_log.get(
+      filter_conditions={
+        'year': input.num_year(),
+        'day': input.num_day(),
+        'context': 'Part A'
+      },
+      select=['data', 'label', 'context'],
+      limit=limit
+    )
+    debug_logs_a.set(df.to_dicts())
+
+  @reactive.effect
+  @reactive.event(input.btn_fetch_debug_logs_b)
+  def btn_fetch_debug_logs_b() -> None:
+    limit: int = input.num_max_logs_b()
+    df: pl.DataFrame = tab_std_log.get(
+      filter_conditions={
+        'year': input.num_year(),
+        'day': input.num_day(),
+        'context': 'Part B'
+      },
+      select=['data', 'label', 'context'],
+      limit=limit
+    )
+    debug_logs_b.set(df.to_dicts())
 
   @reactive.effect
   @reactive.event(input.btn_copy_a)
@@ -170,36 +217,114 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
       type='message',
       duration=2
     )
-  
+
   @reactive.effect
-  @reactive.event(input.btn_save_a)
-  def btn_save_a() -> None:
+  @reactive.event(input.btn_a_too_low)
+  def btn_a_too_low() -> None:
     data: dict = solution_data.get()
-
-    if not data.get('year'):
-      ui.notification_show(
-        'Error: No answer found. Please click \'Run\' to generate an answer.',
-        type='error',
-        duration=3
-      )
-      return
-
-    df: pl.DataFrame = pl.DataFrame(
-      data=[{
-        'year': int(data['year']),
-        'day': int(data['day']),
-        'part': 'a',
-        'test_ind': input.chk_test(),
-        'solution_id': data['run_id_a'],
-        'answer': str(data['answer_a'])
-      }],
-      schema=tab_can_answer.schema.polars
-    )
-    tab_can_answer.upsert(df)
+    tab_std_guess.upsert({
+      'year': input.num_year(),
+      'day': input.num_day(),
+      'part': 'A',
+      'solution_id': data['run_id_a'],
+      'guess': str(data['answer_a']),
+      'comparison': 'l'
+    })
     ui.notification_show(
-      'Answer A saved!',
-      type='message',
-      duration=2
+      'Guess saved!',
+      duration=2,
+      type='message'
+    )
+
+  @reactive.effect
+  @reactive.event(input.btn_a_correct)
+  def btn_a_correct() -> None:
+    data: dict = solution_data.get()
+    tab_std_guess.upsert({
+      'year': input.num_year(),
+      'day': input.num_day(),
+      'part': 'A',
+      'solution_id': data['run_id_a'],
+      'guess': str(data['answer_a']),
+      'comparison': 'c'
+    })
+    ui.notification_show(
+      'Guess saved!',
+      duration=2,
+      type='message'
+    )
+
+  @reactive.effect
+  @reactive.event(input.btn_a_too_high)
+  def btn_a_too_high() -> None:
+    data: dict = solution_data.get()
+    tab_std_guess.upsert({
+      'year': input.num_year(),
+      'day': input.num_day(),
+      'part': 'A',
+      'solution_id': data['run_id_a'],
+      'guess': str(data['answer_a']),
+      'comparison': 'h'
+    })
+    ui.notification_show(
+      'Guess saved!',
+      duration=2,
+      type='message'
+    )
+
+
+  @reactive.effect
+  @reactive.event(input.btn_b_too_low)
+  def btn_b_too_low() -> None:
+    data: dict = solution_data.get()
+    tab_std_guess.upsert({
+      'year': input.num_year(),
+      'day': input.num_day(),
+      'part': 'B',
+      'solution_id': data['run_id_b'],
+      'guess': str(data['answer_b']),
+      'comparison': 'l'
+    })
+    ui.notification_show(
+      'Guess saved!',
+      duration=2,
+      type='message'
+    )
+
+  @reactive.effect
+  @reactive.event(input.btn_b_correct)
+  def btn_b_correct() -> None:
+    data: dict = solution_data.get()
+    tab_std_guess.upsert({
+      'year': input.num_year(),
+      'day': input.num_day(),
+      'part': 'B',
+      'solution_id': data['run_id_b'],
+      'guess': str(data['answer_b']),
+      'comparison': 'c'
+    })
+    ui.notification_show(
+      'Guess saved!',
+      duration=2,
+      type='message'
+    )
+
+  @reactive.effect
+  @reactive.event(input.btn_b_too_high)
+  def btn_b_too_high() -> None:
+    data: dict = solution_data.get()
+    tab_std_guess.upsert({
+      'year': input.num_year(),
+      'day': input.num_day(),
+      'part': 'B',
+      'solution_id': data['run_id_b'],
+      'guess': str(data['answer_b']),
+      'comparison': 'h'
+    })
+    ui.notification_show(
+      'Guess saved!',
+      duration=2,
+      type='message'
     )
 
   @reactive.effect
@@ -222,40 +347,39 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
       duration=2
     )
 
-  @reactive.effect
-  @reactive.event(input.btn_save_b)
-  def btn_save_b() -> None:
-    data: dict = solution_data.get()
-
-    if not data.get('year'):
-      ui.notification_show(
-        'Error: No answer found. Please click \'Run\' to generate an answer.',
-        type='error',
-        duration=3
-      )
-      return
-
+  @render.data_frame
+  def tbl_debug_pre() -> render.DataTable:
+    data: dict = debug_logs_pre.get()
     df: pl.DataFrame = pl.DataFrame(
-      data=[{
-        'year': int(data['year']),
-        'day': int(data['day']),
-        'part': 'b',
-        'test_ind': input.chk_test(),
-        'solution_id': data['run_id_b'],
-        'answer': str(data['answer_b'])
-      }],
-      schema=tab_can_answer.schema.polars
+      data=data,
+      schema=['data', 'label', 'context']
     )
-    tab_can_answer.upsert(df)
-    ui.notification_show(
-      'Answer B saved!',
-      type='message',
-      duration=2
+    return render.DataTable(
+      data=df,
+      width='100%',
+      height='300px',
+      filters=True,
+      summary=False
     )
 
   @render.data_frame
-  def tbl_debug() -> render.DataTable:
-    data: dict = debug_logs.get()
+  def tbl_debug_a() -> render.DataTable:
+    data: dict = debug_logs_a.get()
+    df: pl.DataFrame = pl.DataFrame(
+      data=data,
+      schema=['data', 'label', 'context']
+    )
+    return render.DataTable(
+      data=df,
+      width='100%',
+      height='300px',
+      filters=True,
+      summary=False
+    )
+
+  @render.data_frame
+  def tbl_debug_b() -> render.DataTable:
+    data: dict = debug_logs_b.get()
     df: pl.DataFrame = pl.DataFrame(
       data=data,
       schema=['data', 'label', 'context']
@@ -330,8 +454,8 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
   @render.ui
   def txt_b_validation() -> Tag:
     data: dict = solution_data.get()
-    b_output: int = int(data.get('answer_b', 0))
-    validation: int = int(data.get('expected_b', 0))
+    b_output: int = int(data.get('answer_b') or 0)
+    validation: int = int(data.get('expected_b') or 0)
     validation_str: str = ''
     if not data.get('test', False) or not b_output:
       return ui.h4('')
@@ -352,6 +476,10 @@ def solver_server(input: Inputs, output: Outputs, session: Session) -> None:
       return ui.h4(f'Processing time: {round(a_time, 5)}s')
     return ui.h4('')
 
+  @render.code
+  def txt_error_message_pre() -> str:
+    return error_message_pre.get()
+  
   @render.code
   def txt_error_message_a() -> str:
     return error_message_a.get()
